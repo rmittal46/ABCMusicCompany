@@ -5,7 +5,7 @@ from Utils.constants import database_name
 path = os.getcwd()
 
 # Connect to the database (creates a new file if it doesn't exist)
-db_path = '../resource' + database_name
+db_path = '../resource/' + database_name
 conn = sqlite3.connect(os.path.join(path, db_path))
 
 # Create a cursor object to execute SQL commands

@@ -32,31 +32,38 @@ def getPath():
 def ingestToDb(datamodel, tablename, primaryKey):
     # create a new SQLite database
     logger.info('creating db connection')
-    conn = sqlite3.connect(os.path.join(getPath(), 'resource/music_warehouse.db'))
+    try:
+        conn = sqlite3.connect(os.path.join(getPath(), 'resource/music_warehouse.db'))
+        temp_table = tablename + '_temp'
 
-    temp_table = tablename + '_temp'
+        logger.info("creating temp_table %s in db ", temp_table)
+        datamodel.to_sql(temp_table, conn, if_exists='replace', index=False)
+        logger.info("temp_table %s creation completed ", temp_table)
 
-    logger.info("creating temp_table %s in db ", temp_table)
-    datamodel.to_sql(temp_table, conn, if_exists='replace', index=False)
-    logger.info("temp_table %s creation completed ", temp_table)
+        cur = conn.cursor()
+        # df = pd.read_sql('select * from orders_temp', conn)
 
-    cur = conn.cursor()
-    # df = pd.read_sql('select * from orders_temp', conn)
+        sql_statement = '''Insert into ''' + tablename + ''' Select * from ''' + temp_table + ''' as O where O.''' + primaryKey + ''' Not In (select  ''' + primaryKey + ''' from ''' + tablename + ''')'''
+        logger.info("sql to ingest data in table %s is : %s",tablename, sql_statement)
 
-    sql_statement = '''Insert into ''' + tablename + ''' Select * from ''' + temp_table + ''' as O where O.''' + primaryKey + ''' Not In (select  ''' + primaryKey + ''' from ''' + tablename + ''')'''
-    logger.info("sql to ingest data in table %s is : %s",tablename, sql_statement)
+        cur.execute(sql_statement)
+        logger.info("Data Ingested in table : %s ", tablename)
+        conn.commit()
+    except sqlite3.IntegrityError:
+        logger.error("failed to insert data in table %s", tablename)
+        conn.commit()
+    finally:
+        logger.info("dropping temp table starts")
+        cur.execute(dropTable(temp_table))
+        logger.info("Temp table %s dropped", temp_table)
 
-    cur.execute(sql_statement)
-    logger.info("Data Ingested in table : %s ", tablename)
-
-    logger.info("dropping temp table starts")
-    cur.execute(dropTable(tablename))
-    logger.info("Temp table %s dropped", temp_table)
-
-    # Closes the connection
-    conn.close()
+        conn.commit()
+        cur.close()
+        # Closes the connection
+        conn.close()
 
 
 def dropTable(tableName):
     drop_table_sql = 'drop table ' + tableName
+    logger.info("%s ",drop_table_sql)
     return drop_table_sql
