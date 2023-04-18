@@ -9,10 +9,10 @@ from Utils.logger import getlogger
 logger = getlogger(__name__)
 
 # load properties file
-def load_yaml():
-    with open(os.path.join(getPath(), 'resource/properties.yaml'), "r") as f:
+def load_yaml(args):
+    with open(os.path.join(getPath(), 'resource/configs/',args.properties), "r") as f:
         config = yaml.safe_load(f)
-    logger.info("Loading properties file")
+    logger.info("Loading properties file : %s", args.properties)
     return config
 
 
@@ -49,5 +49,14 @@ def ingestToDb(datamodel, tablename, primaryKey):
     cur.execute(sql_statement)
     logger.info("Data Ingested in table : %s ", tablename)
 
+    logger.info("dropping temp table starts")
+    cur.execute(dropTable(tablename))
+    logger.info("Temp table %s dropped", temp_table)
+
     # Closes the connection
     conn.close()
+
+
+def dropTable(tableName):
+    drop_table_sql = 'drop table ' + tableName
+    return drop_table_sql

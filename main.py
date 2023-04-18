@@ -3,16 +3,20 @@ from DataTransform.orderDetails_transform import orderDetails_transform
 from DataTransform.order_transform import orders_transform
 from DataTransform.dataCleaning import clean_data
 from DataTransform.products_transform import products_transform
+from Utils.argument_parser import getparser
 from Utils.constants import *
 from Utils.helpers import *
 from Utils.logger import getlogger
+
 
 logger = getlogger(__name__)
 
 def run():
 
+    args = getparser()
+
     # To read properties file
-    properties = load_yaml()
+    properties = load_yaml(args)
 
     # Defining Global variables
     tableName = properties[table_name]

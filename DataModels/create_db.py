@@ -1,10 +1,12 @@
 import sqlite3
 import os
+from Utils.constants import database_name
 
 path = os.getcwd()
 
 # Connect to the database (creates a new file if it doesn't exist)
-conn = sqlite3.connect(os.path.join(path,'resource/music_warehouse.db'))
+db_path = '../resource' + database_name
+conn = sqlite3.connect(os.path.join(path, db_path))
 
 # Create a cursor object to execute SQL commands
 cur = conn.cursor()
