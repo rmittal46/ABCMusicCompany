@@ -1,0 +1,4 @@
+table_name: orders
+file_path: resource/input_data/
+file_name: orders_1.csv
+primary_key: OrderNumber
