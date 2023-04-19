@@ -13,8 +13,9 @@ cur = conn.cursor()
 
 # Create a table for customers
 cur.execute('''CREATE TABLE customers (
-                Customer_id INTEGER,
-                ClientName TEXT PRIMARY KEY,
+                Customer_id INTEGER PRIMARY KEY,
+                First_name TEXT,
+                Last_name Text,
                 Email TEXT,
                 Phone TEXT,
                 Address TEXT,
@@ -25,11 +26,12 @@ cur.execute('''CREATE TABLE customers (
 
 # Create a table for products
 cur.execute('''CREATE TABLE products (
-                product_id INTEGER,
-                ProductName TEXT PRIMARY KEY,
+                Product_id INTEGER PRIMARY KEY,
+                ProductName TEXT,
                 ProductType TEXT,
-                price REAL,
-                Description TEXT,
+                ProductQuantity INTEGER,
+                UnitPrice REAL,
+                Currency TEXT,
                 EffectiveFrom DATETIME DEFAULT CURRENT_TIMESTAMP,
                 EffectiveTo DATETIME DEFAULT '9999-12-31 23:59:59.999',
                 CurrentFlag BOOLEAN DEFAULT 1
@@ -53,8 +55,8 @@ cur.execute('''CREATE TABLE orders (
     PaymentType TEXT,
     PaymentBillingCode TEXT,
     PaymentDate DATE,
-    PRIMARY KEY (OrderNumber, ClientName),
-    FOREIGN KEY (ClientName) REFERENCES customers (ClientName)
+    PRIMARY KEY (OrderNumber, Customer_id),
+    FOREIGN KEY (Customer_id) REFERENCES customers (Customer_id)
 )''')
 
 # Create a table for order items
@@ -64,7 +66,7 @@ cur.execute('''CREATE TABLE order_items (
                 quantity INTEGER,
                 PRIMARY KEY (OrderNumber, ProductName),
                 FOREIGN KEY (OrderNumber) REFERENCES orders (OrderNumber),
-                FOREIGN KEY (ProductName) REFERENCES products (ProductName)
+                FOREIGN KEY (ProductName) REFERENCES products (Product_id)
             )''')
 
 # Commit the changes to the database and close the connection

@@ -1,0 +1,4 @@
+table_name: products
+file_path: resource/input_data/
+file_name: products.csv
+primary_key: OrderNumber

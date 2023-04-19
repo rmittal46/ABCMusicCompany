@@ -1,8 +1,6 @@
-from DataTransform.customers_transform import customers_transform
-from DataTransform.orderDetails_transform import orderDetails_transform
-from DataTransform.order_transform import orders_transform
+from DataTransform.customers_transform import load_customers
 from DataTransform.dataCleaning import clean_data
-from DataTransform.products_transform import products_transform
+from DataTransform.products_transform import load_products
 from Utils.argument_parser import getparser
 from Utils.constants import *
 from Utils.helpers import *
@@ -34,26 +32,16 @@ def run():
     clean_df = clean_data(data_df)
     logger.info("File Cleanup Completed")
 
+    # Ingest into customers table
+    load_customers(clean_df)
+
+    #ingest into products table
+    load_products(clean_df)
+
+
     # To perform the business Transformation
     logger.info("Transformation on dataframe starts")
-    if tableName == 'orders':
-        transformed_data = orders_transform(clean_df)
-    elif tableName == 'customers':
-        transformed_data = customers_transform(clean_df)
-    elif tableName == 'products':
-        transformed_data = products_transform(clean_df)
-    elif tableName == 'orderDetails':
-        transformed_data = orderDetails_transform(clean_df)
-    else:
-        logger.error("Target tablename doesn't match")
-        exit()
-
-    logger.info("Transformation on dataframe ends")
-
-    # To ingest data into target table
-    logger.info("Ingestion to Db Starts")
-    ingestToDb(transformed_data, tableName, primaryKey)
-    logger.info("Ingestion Completed")
+    #transformed_data = load_products(clean_df)
 
 
 # Press the green button in the gutter to run the script.

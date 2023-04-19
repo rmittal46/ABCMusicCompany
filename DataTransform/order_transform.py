@@ -2,14 +2,12 @@ import pandas as pd
 
 
 def orders_transform(clean_df):
+    products = transform_to_products(clean_df)
+    print(products)
     # Convert price and total columns to float
     transform_df = convert_to_float(clean_df)
 
     transform_df = convert_to_date(transform_df)
-
-    # Add a revenue column
-    # transform_df['revenue'] = get_revenue(transform_df['ProductQuantity'],
-    #                                                 transform_df['UnitPrice'])
 
     return transform_df
 
@@ -31,3 +29,4 @@ def get_revenue(product_quantity, price):
 def convert_to_date(df):
     df['PaymentDate'] = pd.to_datetime(df['PaymentDate'])
     return df
+

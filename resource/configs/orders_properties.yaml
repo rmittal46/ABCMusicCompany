@@ -1,4 +1,4 @@
-table_name: orders
+table_name: customers
 file_path: resource/input_data/
 file_name: orders_1.csv
-primary_key: OrderNumber
+primary_key: ProductName
