@@ -12,21 +12,18 @@ conn = sqlite3.connect(os.path.join(path, db_path))
 cur = conn.cursor()
 
 # Create a table for customers
-cur.execute('''CREATE TABLE customers (
-                Customer_id INTEGER PRIMARY KEY,
+cur.execute('''CREATE TABLE IF NOT EXISTS customers (
+                Customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 First_name TEXT,
                 Last_name Text,
                 Email TEXT,
                 Phone TEXT,
-                Address TEXT,
-                EffectiveFrom DATETIME DEFAULT CURRENT_TIMESTAMP,
-                EffectiveTo DATETIME DEFAULT '9999-12-31 23:59:59.999',
-                CurrentFlag BOOLEAN DEFAULT 1
+                IsActive INTEGER DEFAULT 1
             )''')
 
 # Create a table for products
-cur.execute('''CREATE TABLE products (
-                Product_id INTEGER PRIMARY KEY,
+cur.execute('''CREATE TABLE IF NOT EXISTS products (
+                Product_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 ProductName TEXT,
                 ProductType TEXT,
                 ProductQuantity INTEGER,
@@ -34,39 +31,46 @@ cur.execute('''CREATE TABLE products (
                 Currency TEXT,
                 EffectiveFrom DATETIME DEFAULT CURRENT_TIMESTAMP,
                 EffectiveTo DATETIME DEFAULT '9999-12-31 23:59:59.999',
-                CurrentFlag BOOLEAN DEFAULT 1
+                CurrentFlag INTEGER DEFAULT 1
             )''')
 
 # Create a table for orders
-cur.execute('''CREATE TABLE orders (
-    OrderNumber TEXT,
-    ClientName TEXT,
-    ProductName TEXT,
-    ProductType TEXT,
-    UnitPrice NUMERIC,
-    ProductQuantity INTEGER,
-    TotalPrice NUMERIC,
-    Currency TEXT,
-    DeliveryAddress TEXT,
-    DeliveryCity TEXT,
-    DeliveryPostcode TEXT,
-    DeliveryCountry TEXT,
-    DeliveryContactNumber TEXT,
-    PaymentType TEXT,
-    PaymentBillingCode TEXT,
-    PaymentDate DATE,
-    PRIMARY KEY (OrderNumber, Customer_id),
-    FOREIGN KEY (Customer_id) REFERENCES customers (Customer_id)
+cur.execute('''CREATE TABLE IF NOT EXISTS orders (
+                OrderNumber TEXT PRIMARY KEY,
+                ProductType TEXT,
+                UnitPrice NUMERIC,
+                PaymentType TEXT,
+                PaymentBillingCode TEXT,
+                PaymentDate DATE
+)''')
+
+
+# Create a table for deliveryAddress
+cur.execute('''CREATE TABLE IF NOT EXISTS delivery_addresses (
+                Address_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Customer_id INTEGER,
+                Address_line TEXT,
+                DeliveryCity TEXT,
+                DeliveryPostcode TEXT,
+                DeliveryCountry TEXT,
+                DeliveryContactNumber TEXT,
+                EffectiveFrom DATETIME DEFAULT CURRENT_TIMESTAMP,
+                EffectiveTo DATETIME DEFAULT '9999-12-31 23:59:59.999',
+                CurrentFlag INTEGER DEFAULT 1,
+                FOREIGN KEY (Customer_id) REFERENCES customers (Customer_id)
 )''')
 
 # Create a table for order items
-cur.execute('''CREATE TABLE order_items (
-                OrderNumber INTEGER,
-                ProductName INTEGER,
-                quantity INTEGER,
-                PRIMARY KEY (OrderNumber, ProductName),
+cur.execute('''CREATE TABLE IF NOT EXISTS order_details (
+                OrderNumber TEXT,
+                Customer_id INTEGER,
+                Product_id INTEGER,
+                Address_id TEXT,
+                PRIMARY KEY (OrderNumber, Customer_id, Product_id, Address_id),
                 FOREIGN KEY (OrderNumber) REFERENCES orders (OrderNumber),
-                FOREIGN KEY (ProductName) REFERENCES products (Product_id)
+                FOREIGN KEY (Product_id) REFERENCES products (Product_id),
+                FOREIGN KEY (Customer_id) REFERENCES customers (Customer_id),
+                FOREIGN KEY (Address_id) REFERENCES delivery_address (Address_id)
             )''')
 
 # Commit the changes to the database and close the connection

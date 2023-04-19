@@ -1,3 +1,4 @@
+from DataTransform.address_transform import load_address
 from DataTransform.customers_transform import load_customers
 from DataTransform.dataCleaning import clean_data
 from DataTransform.products_transform import load_products
@@ -35,8 +36,11 @@ def run():
     # Ingest into customers table
     load_customers(clean_df)
 
-    #ingest into products table
+    # ingest into products table
     load_products(clean_df)
+
+    # ingest into Address Table
+    load_address(clean_df)
 
 
     # To perform the business Transformation

@@ -14,7 +14,6 @@ def orders_transform(clean_df):
 
 # Convert price and total columns to float
 def convert_to_float(df):
-    print(list(df.columns.values))
     df['UnitPrice'] = df['UnitPrice'].astype(float)
     df['TotalPrice'] = df['TotalPrice'].astype(float)
     return df

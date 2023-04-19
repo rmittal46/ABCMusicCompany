@@ -6,7 +6,7 @@ from Utils.logger import getlogger
 logger = getlogger(__name__)
 
 
-class Customer:
+class Orders:
     def __init__(self, first_name, last_name, email, phone):
         self.first_name = first_name
         self.last_name = last_name
@@ -14,7 +14,7 @@ class Customer:
         self.phone = phone
 
 
-class CustomersDB:
+class OrdersDb:
     def __init__(self, db_name):
         self.conn = sqlite3.connect(db_name)
         self.cursor = self.conn.cursor()
@@ -50,6 +50,20 @@ class CustomersDB:
                 except sqlite3.Error as e:
                     logger.error("error while inserting data is : %s", e)
 
+        self.conn.commit()
+
+    def insert_new_customer(self):
+        self.cursor.execute('''
+            INSERT INTO customers
+            (First_name, Last_name, IsActive)
+            SELECT First_name, Last_name, 1
+            FROM temp_customers
+            WHERE NOT EXISTS (
+                SELECT 1 FROM customers 
+                WHERE customers.First_name = temp_customers.First_name and 
+                      customers.Last_name = temp_customers.Last_name
+            );
+        ''')
         self.conn.commit()
 
     def close(self):
