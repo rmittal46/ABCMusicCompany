@@ -21,6 +21,7 @@ class DeliveryAddressDB:
         self.conn = sqlite3.connect(db_name)
         self.cursor = self.conn.cursor()
 
+        logger.info("Creating Address table if not exists in db")
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS delivery_addresses (
                 Address_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -113,6 +114,7 @@ class AddressLoader:
     def get_address(self):
         addresses = []
         for _, row in self.products_df.iterrows():
-            address = DeliveryAddress(row['ProductName'], row['ProductType'], row['UnitPrice'], row['ProductQuantity'], row['Currency'])
+            address = DeliveryAddress(row['DeliveryAddress'], row['DeliveryCity'],
+                                     row['DeliveryPostcode'], row['DeliveryCountry'], row['DeliveryContactNumber'])
             address.append(addresses)
         return address

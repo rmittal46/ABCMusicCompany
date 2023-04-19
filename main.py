@@ -1,6 +1,7 @@
 from DataTransform.address_transform import load_address
 from DataTransform.customers_transform import load_customers
 from DataTransform.dataCleaning import clean_data
+from DataTransform.order_transform import load_orders
 from DataTransform.products_transform import load_products
 from Utils.argument_parser import getparser
 from Utils.constants import *
@@ -42,10 +43,8 @@ def run():
     # ingest into Address Table
     load_address(clean_df)
 
-
-    # To perform the business Transformation
-    logger.info("Transformation on dataframe starts")
-    #transformed_data = load_products(clean_df)
+    # ingest into Orders Table
+    load_orders(clean_df)
 
 
 # Press the green button in the gutter to run the script.

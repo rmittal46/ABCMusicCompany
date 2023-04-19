@@ -8,9 +8,9 @@ logger = getlogger(__name__)
 
 
 class Product:
-    def __init__(self, name, type, unit_price, quantity, currency):
-        self.name = name
-        self.type = type
+    def __init__(self, product_name, product_type, unit_price, quantity, currency):
+        self.product_name = product_name
+        self.product_type = product_type
         self.unit_price = unit_price
         self.quantity = quantity
         self.currency = currency
@@ -21,6 +21,7 @@ class ProductsDB:
         self.conn = sqlite3.connect(db_name)
         self.cursor = self.conn.cursor()
 
+        logger.info("Creating Product table if not exists in db")
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS products (
                 Product_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -56,9 +57,9 @@ class ProductsDB:
                             ''', (datetime.today().strftime('%Y-%m-%d'), existing_products['Product_id']))
 
                     self.cursor.execute('''INSERT INTO products (ProductName, ProductType, UnitPrice, 
-                    ProductQuantity, currency, CurrentFlag, EffectiveFrom, EffectiveTo) VALUES (?, ?, ?, ?, ?, 1, ?, '9999-12-31')''',
+                    ProductQuantity, Currency, CurrentFlag, EffectiveFrom, EffectiveTo) VALUES (?, ?, ?, ?, ?, 1, ?, '9999-12-31')''',
                                         (row['ProductName'], row['ProductType'],row['UnitPrice'],
-                                         row['ProductQuantity'],row['currency'], datetime.today().strftime('%Y-%m-%d')))
+                                         row['ProductQuantity'],row['Currency'], datetime.today().strftime('%Y-%m-%d')))
                     self.conn.commit()
                 except sqlite3.Error as e:
                     logger.error("error while inserting data is : %s", e)
@@ -66,7 +67,7 @@ class ProductsDB:
             else:
                 # insert the new product into the database
                 self.cursor.execute('''INSERT INTO products (ProductName, ProductType, UnitPrice, 
-                                    ProductQuantity, currency, CurrentFlag, EffectiveFrom, EffectiveTo) VALUES (?, ?, ?, ?, ?, 1, ?, '9999-12-31')''',
+                                    ProductQuantity, Currency, CurrentFlag, EffectiveFrom, EffectiveTo) VALUES (?, ?, ?, ?, ?, 1, ?, '9999-12-31')''',
                                     (row['ProductName'], row['ProductType'], row['UnitPrice'],
                                      row['ProductQuantity'], row['Currency'], datetime.today().strftime('%Y-%m-%d')))
                 self.conn.commit()

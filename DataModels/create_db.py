@@ -37,7 +37,7 @@ cur.execute('''CREATE TABLE IF NOT EXISTS products (
 # Create a table for orders
 cur.execute('''CREATE TABLE IF NOT EXISTS orders (
                 OrderNumber TEXT PRIMARY KEY,
-                ProductType TEXT,
+                ProductQuantity INTEGER,
                 UnitPrice NUMERIC,
                 PaymentType TEXT,
                 PaymentBillingCode TEXT,

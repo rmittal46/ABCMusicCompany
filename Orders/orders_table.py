@@ -7,11 +7,13 @@ logger = getlogger(__name__)
 
 
 class Orders:
-    def __init__(self, first_name, last_name, email, phone):
-        self.first_name = first_name
-        self.last_name = last_name
-        self.email = email
-        self.phone = phone
+    def __init__(self, order_number, product_type, unit_price, payment_type, payment_billing_code, payment_date):
+        self.order_number = order_number
+        self.product_type = product_type
+        self.unit_price = unit_price
+        self.payment_type = payment_type
+        self.payment_billing_code = payment_billing_code
+        self.payment_date = payment_date
 
 
 class OrdersDb:
@@ -19,72 +21,59 @@ class OrdersDb:
         self.conn = sqlite3.connect(db_name)
         self.cursor = self.conn.cursor()
 
+        logger.info("Creating Order table if not exists in db")
         self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS customers (
-                Customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                First_name TEXT,
-                Last_name Text,
-                Email TEXT,
-                Phone TEXT,
-                IsActive INTEGER DEFAULT 1
+            CREATE TABLE IF NOT EXISTS orders (
+                OrderNumber TEXT PRIMARY KEY,
+                ProductQuantity INTEGER,
+                UnitPrice NUMERIC,
+                PaymentType TEXT,
+                PaymentBillingCode TEXT,
+                PaymentDate DATE
             );
         ''')
         self.conn.commit()
 
-    def insert_customer(self, customer_df):
-        # define a SQL query to check for matching customer names
-        query = "SELECT * FROM customers WHERE First_name = ? AND Last_name = ?"
+    def insert_order(self, orders_df):
+        # define a SQL query to check for matching orders
+        query = "SELECT * FROM orders WHERE OrderNumber = ?"
 
-        # loop over each row in the DataFrame and check for a matching customer in the database
-        for index, row in customer_df.iterrows():
-            params = (row['First_name'], row['Last_name'])
-            existing_customer = pd.read_sql_query(query, self.conn, params=params)
-            if not existing_customer.empty:
-                print(f"Customer {params} already exists in database")
+        logger.info("Checking for orders in Database")
+        # loop over each row in the DataFrame and check for a matching order in the database
+        for index, row in orders_df.iterrows():
+            params = (row['OrderNumber'],)
+            existing_order = pd.read_sql_query(query, self.conn, params=params)
+            if not existing_order.empty:
+                logger.warn(f"Order %s already exists in database",params)
                 pass
             else:
                 try:
-                    self.cursor.execute("INSERT INTO customers (First_name, Last_name, IsActive) VALUES (?, ?, ?)",
-                                        (row['First_name'], row['Last_name'], 1))
+                    self.cursor.execute('''INSERT INTO orders (OrderNumber, ProductQuantity, UnitPrice, PaymentType, 
+                                        PaymentBillingCode, PaymentDate) VALUES (?, ?, ?, ?, ?, ?)''',
+                                        (row['OrderNumber'], row['ProductQuantity'], row['UnitPrice'], row['PaymentType'],
+                                         row['PaymentBillingCode'], row['PaymentDate']))
                     self.conn.commit()
                 except sqlite3.Error as e:
-                    logger.error("error while inserting data is : %s", e)
+                    logger.error("error while inserting data in order table is : %s", e)
 
         self.conn.commit()
 
-    def insert_new_customer(self):
-        self.cursor.execute('''
-            INSERT INTO customers
-            (First_name, Last_name, IsActive)
-            SELECT First_name, Last_name, 1
-            FROM temp_customers
-            WHERE NOT EXISTS (
-                SELECT 1 FROM customers 
-                WHERE customers.First_name = temp_customers.First_name and 
-                      customers.Last_name = temp_customers.Last_name
-            );
-        ''')
-        self.conn.commit()
 
     def close(self):
         self.conn.close()
 
 
-class CustomerLoader:
+class OrdersLoader:
     def __init__(self, file_path):
-        self.customers_df = pd.read_csv(file_path)
+        self.orders_df = pd.read_csv(file_path)
 
-    def split_customer_name(self, dataframe):
-        dataframe[['First_name', 'Last_name']] = self.customers_df['ClientName'].str.split(n=1, expand=True)
-        return dataframe.loc[:, ['First_name', 'Last_name']]
+    def get_unique_orders(self):
+        return self.orders_df.drop_duplicates(subset=['OrderNumber'])
 
-    def get_unique_customers(self):
-        self.customers_df['ClientName'] = self.customers_df['ClientName'].str.replace('[^a-zA-Z0-9 ]+', '', regex=True)
-        return self.customers_df.drop_duplicates(subset=['ClientName']).loc[:, ['ClientName']]
-
-    def get_customers(self):
-        customers = []
-        for _, row in self.customers_df.iterrows():
-            customer = Customer(row['First_name'], row['Last_name'], row['Email'], row['Phone'], row['IsActive'])
-            customers.append(customer)
-        return customers
+    def get_orders(self):
+        orders = []
+        for _, row in self.orders_df.iterrows():
+            order = Orders(row['OrderNumber'], row['ProductQuantity'], row['UnitPrice'], row['PaymentType'],
+                                         row['PaymentBillingCode'], row['PaymentDate'])
+            orders.append(order)
+        return orders

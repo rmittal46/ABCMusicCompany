@@ -1,31 +1,23 @@
-import pandas as pd
+import os
 
+from Orders.orders_table import OrdersDb, OrdersLoader
+from Utils.helpers import getPath
+from Utils.logger import getlogger
 
-def orders_transform(clean_df):
-    products = transform_to_products(clean_df)
-    print(products)
-    # Convert price and total columns to float
-    transform_df = convert_to_float(clean_df)
+logger = getlogger(__name__)
 
-    transform_df = convert_to_date(transform_df)
+def load_orders(loader_df):
+    # Connect to SQLite database
+    db = OrdersDb(os.path.join(getPath(), 'resource/music_warehouse.db'))
+    loader_df = OrdersLoader('/home/rahul/Documents/git/ABCMusicCompany/resource/input_data/orders_1.csv')
 
-    return transform_df
+    unique_orders = loader_df.get_unique_orders()
 
+    temp_table = 'temp_orders'
+    unique_orders.to_sql(temp_table, db.conn, if_exists='replace', index=False)
 
-# Convert price and total columns to float
-def convert_to_float(df):
-    df['UnitPrice'] = df['UnitPrice'].astype(float)
-    df['TotalPrice'] = df['TotalPrice'].astype(float)
-    return df
+    db.insert_order(unique_orders)
+    logger.info("Orders inserted")
 
-
-# Calculate revenue
-def get_revenue(product_quantity, price):
-    return product_quantity * price
-
-
-# Convert dates to datetime format
-def convert_to_date(df):
-    df['PaymentDate'] = pd.to_datetime(df['PaymentDate'])
-    return df
-
+    db.conn.commit()
+    db.cursor.close()

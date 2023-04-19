@@ -19,6 +19,7 @@ class CustomersDB:
         self.conn = sqlite3.connect(db_name)
         self.cursor = self.conn.cursor()
 
+        logger.info("Creating customers table if not exists in db")
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS customers (
                 Customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
