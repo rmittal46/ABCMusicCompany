@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-from Products.product_table import ProductsDB, ProductLoader
+from DataModels.product_table import ProductsDB, ProductLoader
 from Utils.helpers import getPath
 from Utils.logger import getlogger
 

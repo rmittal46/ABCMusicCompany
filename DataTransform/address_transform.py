@@ -1,6 +1,6 @@
 import os
 
-from Delivery_Addresses.delivery_addresses_table import DeliveryAddressDB, AddressLoader
+from DataModels.delivery_addresses_table import DeliveryAddressDB, AddressLoader
 from Utils.helpers import getPath
 from Utils.logger import getlogger
 

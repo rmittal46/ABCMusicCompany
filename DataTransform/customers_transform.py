@@ -1,6 +1,6 @@
 import os
 
-from Customers.customer_table import CustomersDB, CustomerLoader
+from DataModels.customer_table import CustomersDB, CustomerLoader
 from Utils.helpers import getPath
 from Utils.logger import getlogger
 

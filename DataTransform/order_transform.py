@@ -1,6 +1,6 @@
 import os
 
-from Orders.orders_table import OrdersDb, OrdersLoader
+from DataModels.orders_table import OrdersDb, OrdersLoader
 from Utils.helpers import getPath
 from Utils.logger import getlogger
 
