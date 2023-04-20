@@ -8,10 +8,10 @@ from Utils.logger import getlogger
 logger = getlogger(__name__)
 
 
-def load_products(loader_df):
+def load_products(file_data):
     # Connect to SQLite database
     db = ProductsDB(os.path.join(getPath(), 'resource/music_warehouse.db'))
-    loader_df = ProductLoader('/home/rahul/Documents/git/ABCMusicCompany/resource/input_data/orders_1.csv')
+    loader_df = ProductLoader(file_data)
 
     unique_products = loader_df.get_unique_products()
 

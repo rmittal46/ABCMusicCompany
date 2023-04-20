@@ -64,8 +64,8 @@ class OrdersDb:
 
 
 class OrdersLoader:
-    def __init__(self, file_path):
-        self.orders_df = pd.read_csv(file_path)
+    def __init__(self, file_data):
+        self.orders_df = file_data
 
     def get_unique_orders(self):
         return self.orders_df.drop_duplicates(subset=['OrderNumber'])

@@ -87,8 +87,8 @@ class DeliveryAddressDB:
 
 
 class AddressLoader:
-    def __init__(self, file_path):
-        self.address_df = pd.read_csv(file_path)
+    def __init__(self, file_data):
+        self.address_df = file_data
 
     def getCustomer_id(self, dataframe, db):
         # read the customer table into a pandas dataframe

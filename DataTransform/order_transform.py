@@ -6,10 +6,10 @@ from Utils.logger import getlogger
 
 logger = getlogger(__name__)
 
-def load_orders(loader_df):
+def load_orders(file_data):
     # Connect to SQLite database
     db = OrdersDb(os.path.join(getPath(), 'resource/music_warehouse.db'))
-    loader_df = OrdersLoader('/home/rahul/Documents/git/ABCMusicCompany/resource/input_data/orders_1.csv')
+    loader_df = OrdersLoader(file_data)
 
     unique_orders = loader_df.get_unique_orders()
 

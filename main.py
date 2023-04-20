@@ -14,16 +14,15 @@ logger = getlogger(__name__)
 
 def run():
 
+    # feature To provide arguments and run application basis on config files
     args = getparser()
 
     # To read properties file
     properties = load_yaml(args)
 
     # Defining Global variables
-    tableName = properties[table_name]
-    fileName = properties[file_name]
-    filePath = properties[file_path] + fileName
-    primaryKey = properties[primary_key]
+    input_file_name = properties[file_name]
+    filePath = properties[file_path] + input_file_name
 
     # To load the file to pandas dataframe & perform operations on it
     logger.info("File Loading in pandas Dataframe starts")
@@ -31,24 +30,29 @@ def run():
     logger.info("File Loading ends")
 
     # To perform the data cleaning
-    logger.info("File Cleanup Starts")
+    logger.info("Data Cleanup Starts")
     clean_df = clean_data(file_data)
-    logger.info("File Cleanup Completed")
+    logger.info("Data Cleanup Completed")
 
     # Ingest into customers table
-    load_customers(clean_df)
+    logger.info("Starting Customer table Loading")
+    load_customers(file_data)
 
     # ingest into products table
-    load_products(clean_df)
+    logger.info("Starting Products table Loading")
+    load_products(file_data)
 
     # ingest into Address Table
-    load_address(clean_df)
+    logger.info("Starting Address table Loading")
+    load_address(file_data)
 
     # ingest into Orders Table
-    load_orders(clean_df)
+    logger.info("Starting Orders table Loading")
+    load_orders(file_data)
 
     # ingest into Orders Table
-    load_order_details(clean_df,file_data)
+    logger.info("Starting Order_details table Loading")
+    load_order_details(file_data)
 
 
 # Press the green button in the gutter to run the script.

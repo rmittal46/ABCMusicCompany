@@ -58,8 +58,8 @@ class CustomersDB:
 
 
 class CustomerLoader:
-    def __init__(self, file_path):
-        self.customers_df = pd.read_csv(file_path)
+    def __init__(self, file_data):
+        self.customers_df = file_data
 
     def split_customer_name(self, dataframe):
         dataframe[['First_name', 'Last_name']] = self.customers_df['ClientName'].str.split(n=1, expand=True)

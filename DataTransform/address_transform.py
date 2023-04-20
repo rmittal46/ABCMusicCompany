@@ -7,10 +7,10 @@ from Utils.logger import getlogger
 logger = getlogger(__name__)
 
 
-def load_address(loader_df):
+def load_address(file_data):
     # Connect to SQLite database
     db = DeliveryAddressDB(os.path.join(getPath(), 'resource/music_warehouse.db'))
-    loader_df = AddressLoader('/home/rahul/Documents/git/ABCMusicCompany/resource/input_data/orders_1.csv')
+    loader_df = AddressLoader(file_data)
 
     unique_addresses = loader_df.get_unique_address()
 

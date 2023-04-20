@@ -68,8 +68,8 @@ class OrderDetailsDB:
 
 
 class OrderDetailsLoader:
-    def __init__(self, file_path):
-        self.orderdetail_df = pd.read_csv(file_path)
+    def __init__(self, file_data):
+        self.orderdetail_df = file_data
 
     def get_keys(self, db, file_data):
         order_detail_keys = getOrderDetailKeys(db,file_data)

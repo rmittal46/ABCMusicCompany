@@ -77,8 +77,8 @@ class ProductsDB:
 
 
 class ProductLoader:
-    def __init__(self, file_path):
-        self.products_df = pd.read_csv(file_path)
+    def __init__(self, file_data):
+        self.products_df = file_data
 
     def get_unique_products(self):
         return self.products_df.drop_duplicates(subset=['ProductName', 'ProductType', 'UnitPrice', 'Currency']).loc[:,

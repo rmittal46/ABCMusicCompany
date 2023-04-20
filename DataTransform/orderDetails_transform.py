@@ -7,10 +7,10 @@ from Utils.logger import getlogger
 logger = getlogger(__name__)
 
 
-def load_order_details(loader_df, file_data):
+def load_order_details(file_data):
     # Connect to SQLite database
     db = OrderDetailsDB(os.path.join(getPath(), 'resource/music_warehouse.db'))
-    loader_df = OrderDetailsLoader('/home/rahul/Documents/git/ABCMusicCompany/resource/input_data/orders_1.csv')
+    loader_df = OrderDetailsLoader(file_data)
 
     order_details = loader_df.get_keys(db, file_data)
 
