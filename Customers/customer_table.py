@@ -41,7 +41,7 @@ class CustomersDB:
             params = (row['First_name'], row['Last_name'])
             existing_customer = pd.read_sql_query(query, self.conn, params=params)
             if not existing_customer.empty:
-                print(f"Customer {params} already exists in database")
+                logger.warn("Customer %s already exists in database", params)
                 pass
             else:
                 try:
@@ -49,7 +49,7 @@ class CustomersDB:
                                         (row['First_name'], row['Last_name'], 1))
                     self.conn.commit()
                 except sqlite3.Error as e:
-                    logger.error("error while inserting data is : %s", e)
+                    logger.error("error while inserting customers data is : %s", e)
 
         self.conn.commit()
 

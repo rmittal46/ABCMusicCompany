@@ -1,6 +1,7 @@
 from DataTransform.address_transform import load_address
 from DataTransform.customers_transform import load_customers
 from DataTransform.dataCleaning import clean_data
+from DataTransform.orderDetails_transform import load_order_details
 from DataTransform.order_transform import load_orders
 from DataTransform.products_transform import load_products
 from Utils.argument_parser import getparser
@@ -26,12 +27,12 @@ def run():
 
     # To load the file to pandas dataframe & perform operations on it
     logger.info("File Loading in pandas Dataframe starts")
-    data_df = load_file(filePath)
+    file_data = read_csv(filePath)
     logger.info("File Loading ends")
 
     # To perform the data cleaning
     logger.info("File Cleanup Starts")
-    clean_df = clean_data(data_df)
+    clean_df = clean_data(file_data)
     logger.info("File Cleanup Completed")
 
     # Ingest into customers table
@@ -45,6 +46,9 @@ def run():
 
     # ingest into Orders Table
     load_orders(clean_df)
+
+    # ingest into Orders Table
+    load_order_details(clean_df,file_data)
 
 
 # Press the green button in the gutter to run the script.

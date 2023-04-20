@@ -20,7 +20,7 @@ def load_address(loader_df):
     address_df.to_sql(temp_table, db.conn, if_exists='replace', index=False)
 
     db.insert_address(address_df)
-    logger.info("Addresses inserted int the table")
+    logger.info("Addresses inserted into the table")
 
     db.conn.commit()
     db.cursor.close()

@@ -1,6 +1,5 @@
 import os
 import pandas as pd
-from datetime import datetime
 
 from Products.product_table import ProductsDB, ProductLoader
 from Utils.helpers import getPath

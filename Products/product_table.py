@@ -47,7 +47,7 @@ class ProductsDB:
             params = (row['ProductName'],)
             existing_product = pd.read_sql_query(query1, self.conn, params=params)
             if not existing_product.empty:
-                logger.warn(f"Product %s already exists in database", params)
+                logger.warn("Product %s already exists in database", params)
                 existing_products = existing_product.iloc[0]
                 try:
                     self.cursor.execute('''

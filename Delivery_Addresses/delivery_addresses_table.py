@@ -49,7 +49,7 @@ class DeliveryAddressDB:
             params = (row['Customer_id'],row['DeliveryPostcode'])
             existing_address = pd.read_sql_query(query, self.conn, params=params)
             if not existing_address.empty:
-                logger.warn(f"Address %s already exists in database", params)
+                logger.warn("Address %s already exists in database", params)
                 existing_addresses = existing_address.iloc[0]
                 try:
                     self.cursor.execute('''
@@ -100,7 +100,7 @@ class AddressLoader:
         # join the customer and orders tables on the customer name column
         merged_df = pd.merge(customer_df, dataframe, on=['First_name','Last_name'])
 
-        # drop column B from the dataframe
+        # drop irrelevant from the dataframe
         merged_df = merged_df.drop(columns=['First_name','Last_name', 'ClientName'], axis=1)
 
         # # extract the customer ID column from the merged dataframe
