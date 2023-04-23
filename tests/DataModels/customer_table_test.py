@@ -1,32 +1,46 @@
 import pandas as pd
+import pytest
 
+from DataModels.Database_details import Database
 from DataModels.customer_table import CustomersDB, CustomerLoader, Customer
-from Utils.logger import getlogger
+from utils.logger import getlogger
 from pandas.testing import assert_frame_equal
 
 logger = getlogger(__name__)
 
 
-def test_insert_customer():
+def setup_env():
     # prepare a test database with some initial data
     db_name = ':memory:'
 
+    # create a Database instance to initiate db connection and cursor
+    db = Database(db_name)
+    return db
+
+
+def test_insert_customer():
+    db = setup_env()
     # create a CustomersDB object and call the insert_customer method with some new customers
-    db = CustomersDB(db_name)
+    customer = CustomersDB(db)
+
+    customer.create_table()
+
     db.cursor.execute("INSERT INTO customers (First_name, Last_name, IsActive) VALUES ('Alice', 'Adams', 1)")
 
     df = pd.DataFrame({'First_name': ['Bob', 'Charlie'], 'Last_name': ['Brown', 'Chaplin']})
-    db.insert_customer(df)
+    customer.insert_customer(df)
 
     # check that the new customers were inserted correctly into the database
     db.cursor.execute('SELECT * FROM customers')
+
     result = db.cursor.fetchall()
+
     expected = [(1, 'Alice', 'Adams', None, None, 1), (2, 'Bob', 'Brown', None, None, 1),
                 (3, 'Charlie', 'Chaplin', None, None, 1)]
     print("result ", result)
     print("expected ", expected)
 
-    db.close()
+    customer.close()
 
     assert result == expected
 
@@ -40,7 +54,6 @@ def test_unique_customers():
     loader_df = CustomerLoader(df)
 
     actual_unique_customers = loader_df.get_unique_customers()
-
 
     expected_unique_customers = pd.DataFrame({'First_name': ['Bob', 'Bobby'],
                                               'Last_name': ['Brown', 'Dave']

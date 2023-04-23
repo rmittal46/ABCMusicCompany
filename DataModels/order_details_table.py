@@ -1,8 +1,8 @@
 import pandas as pd
 import sqlite3
 
-from Utils.helpers import getOrderDetailKeys
-from Utils.logger import getlogger
+from utils.helpers import getOrderDetailKeys
+from utils.logger import getlogger
 
 logger = getlogger(__name__)
 
@@ -16,25 +16,30 @@ class OrderDetails:
 
 
 class OrderDetailsDB:
-    def __init__(self, db_name):
-        self.conn = sqlite3.connect(db_name)
-        self.cursor = self.conn.cursor()
+    def __init__(self, db):
+        self.db = db
+        self.cursor = db.cursor
 
-        logger.info("Creating order_details table if not exists in db")
-        self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS order_details (
-                OrderNumber TEXT,
-                Customer_id INTEGER,
-                Product_id INTEGER,
-                Address_id INTEGER,
-                PRIMARY KEY (OrderNumber, Customer_id, Product_id, Address_id),
-                FOREIGN KEY (OrderNumber) REFERENCES orders (OrderNumber),
-                FOREIGN KEY (Product_id) REFERENCES products (Product_id),
-                FOREIGN KEY (Customer_id) REFERENCES customers (Customer_id),
-                FOREIGN KEY (Address_id) REFERENCES delivery_address (Address_id)
-            );
-        ''')
-        self.conn.commit()
+    def create_table(self):
+        try:
+            self.cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS order_details (
+                        OrderNumber TEXT,
+                        Customer_id INTEGER,
+                        Product_id INTEGER,
+                        Address_id INTEGER,
+                        PRIMARY KEY (OrderNumber, Customer_id, Product_id, Address_id),
+                        FOREIGN KEY (OrderNumber) REFERENCES orders (OrderNumber),
+                        FOREIGN KEY (Product_id) REFERENCES products (Product_id),
+                        FOREIGN KEY (Customer_id) REFERENCES customers (Customer_id),
+                        FOREIGN KEY (Address_id) REFERENCES delivery_address (Address_id)
+                    );
+                ''')
+            self.db.conn.commit()
+            logger.info("Table created successfully")
+        except Exception as e:
+            logger.error("Error while creating table: %s", e)
+            self.db.conn.rollback()
 
     def insert_order_details(self, order_detail_df):
         # define a SQL query to check for matching customer names
@@ -48,7 +53,7 @@ class OrderDetailsDB:
         # loop over each row in the DataFrame and check for a matching customer in the database
         for index, row in order_detail_df.iterrows():
             params = (row['OrderNumber'], row['Customer_id'], row['Product_id'], row['Address_id'])
-            existing_order_detail = pd.read_sql_query(query, self.conn, params=params)
+            existing_order_detail = pd.read_sql_query(query, self.db.conn, params=params)
             if not existing_order_detail.empty:
                 logger.warn(f"Order_details %s already exists in database", params)
                 pass
@@ -57,19 +62,19 @@ class OrderDetailsDB:
                     self.cursor.execute('''INSERT INTO order_details (OrderNumber, Customer_id, Product_id, Address_id) 
                                            VALUES (?, ?, ?, ?)''',
                                         (row['OrderNumber'], row['Customer_id'], row['Product_id'], row['Address_id']))
-                    self.conn.commit()
+                    self.db.conn.commit()
                 except sqlite3.Error as e:
                     logger.error("error while inserting order_details data is : %s", e)
 
-        self.conn.commit()
+        self.db.conn.commit()
 
     def close(self):
-        self.conn.close()
+        self.db.conn.close()
 
-    def drop_table(self, table_name):
+    def drop_temp_table(self, table_name):
         query = 'drop table ' + table_name
         self.cursor.execute(query)
-        self.conn.commit()
+        self.db.conn.commit()
 
 
 class OrderDetailsLoader:

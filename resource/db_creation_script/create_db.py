@@ -1,6 +1,6 @@
 import sqlite3
 import os
-from Utils.constants import database_name
+from utils.constants import database_name
 
 path = os.getcwd()
 

@@ -2,7 +2,7 @@ import pandas as pd
 import sqlite3
 from datetime import datetime
 
-from Utils.logger import getlogger
+from utils.logger import getlogger
 
 logger = getlogger(__name__)
 
@@ -17,25 +17,30 @@ class Product:
 
 
 class ProductsDB:
-    def __init__(self, db_name):
-        self.conn = sqlite3.connect(db_name)
-        self.cursor = self.conn.cursor()
+    def __init__(self, db):
+        self.db = db
+        self.cursor = db.cursor
 
-        logger.info("Creating Product table if not exists in db")
-        self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS products (
-                Product_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ProductName TEXT,
-                ProductType TEXT,
-                ProductQuantity INTEGER,
-                UnitPrice REAL,
-                Currency TEXT,
-                EffectiveFrom DATETIME DEFAULT CURRENT_TIMESTAMP,
-                EffectiveTo DATETIME DEFAULT '9999-12-31 23:59:59.999',
-                CurrentFlag INTEGER DEFAULT 1
-            );
-        ''')
-        self.conn.commit()
+    def create_table(self):
+        try:
+            self.cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS products (
+                        Product_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        ProductName TEXT,
+                        ProductType TEXT,
+                        ProductQuantity INTEGER,
+                        UnitPrice REAL,
+                        Currency TEXT,
+                        EffectiveFrom DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        EffectiveTo DATETIME DEFAULT '9999-12-31 23:59:59.999',
+                        CurrentFlag INTEGER DEFAULT 1
+                    );
+                ''')
+            self.db.conn.commit()
+            logger.info("Table created successfully")
+        except Exception as e:
+            logger.error("Error while creating table: %s", e)
+            self.db.conn.rollback()
 
     def insert_product(self, product):
 
@@ -45,7 +50,7 @@ class ProductsDB:
         # loop over each row in the DataFrame and check for a matching customer in the database
         for index, row in product.iterrows():
             params = (row['ProductName'],)
-            existing_product = pd.read_sql_query(query1, self.conn, params=params)
+            existing_product = pd.read_sql_query(query1, self.db.conn, params=params)
             if not existing_product.empty:
                 logger.warn("Product %s already exists in database", params) # pragma: no cover
                 existing_products = existing_product.iloc[0]
@@ -60,25 +65,25 @@ class ProductsDB:
                     ProductQuantity, Currency, CurrentFlag, EffectiveFrom, EffectiveTo) VALUES (?, ?, ?, ?, ?, 1, ?, '9999-12-31')''',
                                         (row['ProductName'], row['ProductType'],row['UnitPrice'],
                                          row['ProductQuantity'],row['Currency'], datetime.today().strftime('%Y-%m-%d')))
-                    self.conn.commit()
+                    self.db.conn.commit()
                 except sqlite3.Error as e:
                     logger.error("error while inserting data is : %s", e) # pragma: no cover
-                self.conn.commit()
+                self.db.conn.commit()
             else:
                 # insert the new product into the database
                 self.cursor.execute('''INSERT INTO products (ProductName, ProductType, UnitPrice, 
                                     ProductQuantity, Currency, CurrentFlag, EffectiveFrom, EffectiveTo) VALUES (?, ?, ?, ?, ?, 1, ?, '9999-12-31')''',
                                     (row['ProductName'], row['ProductType'], row['UnitPrice'],
                                      row['ProductQuantity'], row['Currency'], datetime.today().strftime('%Y-%m-%d')))
-                self.conn.commit()
+                self.db.conn.commit()
 
     def close(self):
-        self.conn.close()
+        self.db.conn.close()
 
-    def drop_table(self, table_name):
+    def drop_temp_table(self, table_name):
         query = 'drop table ' + table_name
         self.cursor.execute(query)
-        self.conn.commit()
+        self.db.conn.commit()
 
 
 class ProductLoader:

@@ -1,16 +1,28 @@
 import pandas as pd
+import pytest
 from pandas._testing import assert_frame_equal
 
+from DataModels.Database_details import Database
 from DataModels.customer_table import CustomersDB
 from DataModels.delivery_addresses_table import DeliveryAddressDB, AddressLoader
 
 
-def test_insert_address():
+def setup_env():
     # prepare a test database with some initial data
     db_name = ':memory:'
 
+    # create a Database instance to initiate db connection and cursor
+    db = Database(db_name)
+    return db
+
+
+def test_insert_address():
+    db = setup_env()
     # create a CustomersDB object and call the insert_customer method with some new Addresses
-    db = DeliveryAddressDB(db_name)
+    address = DeliveryAddressDB(db)
+
+    address.create_table()
+
     db.cursor.execute('''INSERT INTO delivery_addresses (Customer_id, Address_line, DeliveryCity, 
                     DeliveryPostcode, DeliveryCountry, DeliveryContactNumber, CurrentFlag, EffectiveFrom, EffectiveTo) 
                     VALUES (1, '72 Academy Street', 'Swindon', 'SN4 9QP', 'United Kingdom', '+44 7911 843910', 1, 
@@ -25,7 +37,7 @@ def test_insert_address():
         'DeliveryContactNumber': ['555-1234', '555-5678', '555-9012']
     })
 
-    db.insert_address(test_df)
+    address.insert_address(test_df)
 
     # retrieve the inserted data from the database
     query = "SELECT * FROM delivery_addresses WHERE Customer_id = ? and DeliveryPostcode = ?"
@@ -98,10 +110,12 @@ def test_unique_address():
 
 
 def test_get_customers():
-    # prepare a test database with some initial data
-    db_name = ':memory:'
+    db = setup_env()
 
-    db = CustomersDB(db_name)
+    customer = CustomersDB(db)
+
+    customer.create_table()
+
     db.cursor.execute("INSERT INTO customers (First_name, Last_name, IsActive) VALUES ('Bob', 'Brown', 1)")
 
     # Create a test dataframe with some data

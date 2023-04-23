@@ -2,7 +2,7 @@ import pandas as pd
 import sqlite3
 from datetime import datetime
 
-from Utils.logger import getlogger
+from utils.logger import getlogger
 
 logger = getlogger(__name__)
 
@@ -17,27 +17,32 @@ class DeliveryAddress:
 
 
 class DeliveryAddressDB:
-    def __init__(self, db_name):
-        self.conn = sqlite3.connect(db_name)
-        self.cursor = self.conn.cursor()
+    def __init__(self, db):
+        self.db = db
+        self.cursor = db.cursor
 
-        logger.info("Creating Address table if not exists in db")
-        self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS delivery_addresses (
-                Address_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                Customer_id INTEGER,
-                Address_line TEXT,
-                DeliveryCity TEXT,
-                DeliveryPostcode TEXT,
-                DeliveryCountry TEXT,
-                DeliveryContactNumber TEXT,
-                EffectiveFrom DATETIME DEFAULT CURRENT_TIMESTAMP,
-                EffectiveTo DATETIME DEFAULT '9999-12-31 23:59:59.999',
-                CurrentFlag INTEGER DEFAULT 1,
-                FOREIGN KEY (Customer_id) REFERENCES customers (Customer_id)
-            );
-        ''')
-        self.conn.commit()
+    def create_table(self):
+        try:
+            self.cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS delivery_addresses (
+                        Address_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        Customer_id INTEGER,
+                        Address_line TEXT,
+                        DeliveryCity TEXT,
+                        DeliveryPostcode TEXT,
+                        DeliveryCountry TEXT,
+                        DeliveryContactNumber TEXT,
+                        EffectiveFrom DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        EffectiveTo DATETIME DEFAULT '9999-12-31 23:59:59.999',
+                        CurrentFlag INTEGER DEFAULT 1,
+                        FOREIGN KEY (Customer_id) REFERENCES customers (Customer_id)
+                    );
+                ''')
+            self.db.conn.commit()
+            logger.info("Table created successfully")
+        except Exception as e:
+            logger.error("Error while creating table: %s", e)
+            self.db.conn.rollback()
 
     def insert_address(self, address):
 
@@ -47,7 +52,7 @@ class DeliveryAddressDB:
         # loop over each row in the DataFrame and check for a matching customer in the database
         for index, row in address.iterrows():
             params = (row['Customer_id'], row['DeliveryPostcode'])
-            existing_address = pd.read_sql_query(query, self.conn, params=params)
+            existing_address = pd.read_sql_query(query, self.db.conn, params=params)
             if not existing_address.empty:
                 logger.warn("Address %s already exists in database", params) # pragma: no cover
                 existing_addresses = existing_address.iloc[0]
@@ -65,10 +70,10 @@ class DeliveryAddressDB:
                                         (row['Customer_id'], row['DeliveryAddress'], row['DeliveryCity'],
                                          row['DeliveryPostcode'], row['DeliveryCountry'], row['DeliveryContactNumber'],
                                          datetime.today().strftime('%Y-%m-%d')))
-                    self.conn.commit()
+                    self.db.conn.commit()
                 except sqlite3.Error as e:
                     logger.error("error while inserting data is : %s", e) # pragma: no cover
-                self.conn.commit()
+                self.db.conn.commit()
             else:
                 try:
                     # insert the new product into the database
@@ -80,15 +85,15 @@ class DeliveryAddressDB:
                                          datetime.today().strftime('%Y-%m-%d')))
                 except sqlite3.Error as e:
                     logger.error("error while inserting data is : %s", e) # pragma: no cover
-                self.conn.commit()
+                self.db.conn.commit()
 
     def close(self):
-        self.conn.close()
+        self.db.conn.close()
 
-    def drop_table(self, table_name):
+    def drop_temp_table(self, table_name):
         query = 'drop table ' + table_name
         self.cursor.execute(query)
-        self.conn.commit()
+        self.db.conn.commit()
 
 
 class AddressLoader:
