@@ -1,16 +1,26 @@
 import pandas as pd
 import pytest
 
+from DataModels.Database_details import Database
 from DataModels.orders_table import OrdersDb, OrdersLoader
 from pandas.testing import assert_frame_equal
 
 
-def test_insert_orders():
+def setup_env():
     # prepare a test database with some initial data
     db_name = ':memory:'
 
+    # create a Database instance to initiate db connection and cursor
+    db = Database(db_name)
+    return db
+
+
+def test_insert_orders():
+    db = setup_env()
     # create a ordersDB object and call the insert_order method with some new orders
-    db = OrdersDb(db_name)
+    orders = OrdersDb(db)
+    orders.create_table()
+
     db.cursor.execute('''INSERT INTO orders (OrderNumber, ProductQuantity, UnitPrice, PaymentType, 
                                         PaymentBillingCode, PaymentDate) 
                                         values ('PO0060504-1','3',4700,'Debit','PO0060504-20210321','21/03/2021')
@@ -24,7 +34,7 @@ def test_insert_orders():
         'PaymentBillingCode': ['Po0024697-20210127'],
         'PaymentDate': ['27/01/2021']
     })
-    db.insert_order(df)
+    orders.insert_order(df)
 
     # check that the new customers were inserted correctly into the database
     result = pd.read_sql_query('SELECT * FROM orders', db.conn)

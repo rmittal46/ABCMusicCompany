@@ -1,2 +1,4 @@
 file_path: resource/input_data/
 file_name: orders.csv
+database_name: music_warehouse.db
+database_path: resource/

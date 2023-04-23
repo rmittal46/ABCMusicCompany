@@ -1,7 +1,7 @@
 import pandas as pd
 import sqlite3
 
-from Utils.logger import getlogger
+from utils.logger import getlogger
 
 logger = getlogger(__name__)
 
@@ -17,22 +17,27 @@ class Orders:
 
 
 class OrdersDb:
-    def __init__(self, db_name):
-        self.conn = sqlite3.connect(db_name)
-        self.cursor = self.conn.cursor()
+    def __init__(self, db):
+        self.db = db
+        self.cursor = db.cursor
 
-        logger.info("Creating Order table if not exists in db")
-        self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS orders (
-                OrderNumber TEXT PRIMARY KEY,
-                ProductQuantity INTEGER,
-                UnitPrice NUMERIC,
-                PaymentType TEXT,
-                PaymentBillingCode TEXT,
-                PaymentDate DATE
-            );
-        ''')
-        self.conn.commit()
+    def create_table(self):
+        try:
+            self.cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS orders (
+                        OrderNumber TEXT PRIMARY KEY,
+                        ProductQuantity INTEGER,
+                        UnitPrice NUMERIC,
+                        PaymentType TEXT,
+                        PaymentBillingCode TEXT,
+                        PaymentDate DATE
+                    );
+                ''')
+            self.db.conn.commit()
+            logger.info("Table created successfully")
+        except Exception as e:
+            logger.error("Error while creating table: %s", e)
+            self.db.conn.rollback()
 
     def insert_order(self, orders_df):
         # define a SQL query to check for matching orders
@@ -42,7 +47,7 @@ class OrdersDb:
         # loop over each row in the DataFrame and check for a matching order in the database
         for index, row in orders_df.iterrows():
             params = (row['OrderNumber'],)
-            existing_order = pd.read_sql_query(query, self.conn, params=params)
+            existing_order = pd.read_sql_query(query, self.db.conn, params=params)
             if not existing_order.empty:
                 logger.warn(f"Order %s already exists in database", params) # pragma: no cover
                 pass
@@ -53,19 +58,19 @@ class OrdersDb:
                                         (row['OrderNumber'], row['ProductQuantity'], row['UnitPrice'],
                                          row['PaymentType'],
                                          row['PaymentBillingCode'], row['PaymentDate']))
-                    self.conn.commit()
+                    self.db.conn.commit()
                 except sqlite3.Error as e:
                     logger.error("error while inserting data in order table is : %s", e) # pragma: no cover
 
-        self.conn.commit()
+        self.db.conn.commit()
 
     def close(self):
-        self.conn.close()
+        self.db.conn.close()
 
-    def drop_table(self, table_name):
+    def drop_temp_table(self, table_name):
         query = 'drop table ' + table_name
         self.cursor.execute(query)
-        self.conn.commit()
+        self.db.conn.commit()
 
 
 class OrdersLoader:

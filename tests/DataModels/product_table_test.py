@@ -1,20 +1,30 @@
 import pandas as pd
 import pytest
 
-from DataModels.customer_table import CustomerLoader, Customer
-from DataModels.product_table import ProductsDB, ProductLoader, Product
-from Utils.logger import getlogger
+from DataModels.Database_details import Database
+from DataModels.product_table import ProductsDB, ProductLoader
+from utils.logger import getlogger
 from pandas.testing import assert_frame_equal
 
 logger = getlogger(__name__)
 
 
-def test_insert_products():
+def setup_env():
     # prepare a test database with some initial data
     db_name = ':memory:'
 
+    # create a Database instance to initiate db connection and cursor
+    db = Database(db_name)
+    return db
+
+
+def test_insert_products():
+    db = setup_env()
     # create a ProductsDB object and call the insert_product method with some new products
-    db = ProductsDB(db_name)
+    product = ProductsDB(db)
+
+    product.create_table()
+
     db.cursor.execute('''INSERT INTO products (ProductName, ProductType, UnitPrice, 
                     ProductQuantity, Currency, CurrentFlag, EffectiveFrom, EffectiveTo) 
                     VALUES ('Piano','Keyboard',4700,10,'GBP',1,'2023-04-20', '9999-12-31')
@@ -27,7 +37,7 @@ def test_insert_products():
         'ProductQuantity': ['2', '1'],
         'Currency': ['GBP', 'GBP']
     })
-    db.insert_product(df)
+    product.insert_product(df)
 
     # check that the new customers were inserted correctly into the database
     result = pd.read_sql_query('SELECT * FROM products', db.conn)
@@ -106,11 +116,12 @@ def test_get_product_quantity_by_product():
 
 
 def test_update_products():
-    # prepare a test database with some initial data
-    db_name = ':memory:'
+    db = setup_env()
 
     # create a ProductsDB object and call the insert_product method with some new products
-    db = ProductsDB(db_name)
+    products = ProductsDB(db)
+
+    products.create_table()
 
     df = pd.DataFrame({
         'ProductName': ['Harp'],
@@ -119,7 +130,7 @@ def test_update_products():
         'ProductQuantity': ['4'],
         'Currency': ['GBP']
     })
-    db.insert_product(df)
+    products.insert_product(df)
 
     # check that the new products were inserted correctly into the database
     result = pd.read_sql_query('''SELECT * FROM products WHERE ProductName = "Harp" and CurrentFlag = 1 ''', db.conn)
