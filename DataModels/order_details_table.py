@@ -26,7 +26,7 @@ class OrderDetailsDB:
                 OrderNumber TEXT,
                 Customer_id INTEGER,
                 Product_id INTEGER,
-                Address_id TEXT,
+                Address_id INTEGER,
                 PRIMARY KEY (OrderNumber, Customer_id, Product_id, Address_id),
                 FOREIGN KEY (OrderNumber) REFERENCES orders (OrderNumber),
                 FOREIGN KEY (Product_id) REFERENCES products (Product_id),
@@ -77,7 +77,7 @@ class OrderDetailsLoader:
         self.orderdetail_df = file_data
 
     def get_keys(self, db, file_data):
-        order_detail_keys = getOrderDetailKeys(db,file_data)
+        order_detail_keys = getOrderDetailKeys(db, file_data)
         return order_detail_keys
 
     def get_unique_order_detail(self):
