@@ -1,5 +1,4 @@
 # Functions that are going to help ingestion, transformation & cleanup of file
-import sqlite3
 
 import os
 import pandas as pd
@@ -45,8 +44,6 @@ def getOrderDetailKeys(db, file_data):
 
     # read the Delivery Address table into a pandas dataframe
     address_df = pd.read_sql_query("SELECT Distinct Address_id, Address_line, DeliveryPostcode FROM delivery_addresses", db.conn)
-
-    file_data[['First_name', 'Last_name']] = file_data['ClientName'].str.split(n=1, expand=True)
 
     file_data = file_data.drop_duplicates(subset=['OrderNumber','ClientName','ProductName','DeliveryAddress', 'DeliveryPostcode']).loc[:,['OrderNumber','First_name','Last_name','ProductName','DeliveryAddress','DeliveryPostcode']]
 

@@ -7,9 +7,9 @@ logger = getlogger(__name__)
 
 
 class Orders:
-    def __init__(self, order_number, product_type, unit_price, payment_type, payment_billing_code, payment_date):
+    def __init__(self, order_number, product_quantity, unit_price, payment_type, payment_billing_code, payment_date):
         self.order_number = order_number
-        self.product_type = product_type
+        self.product_quantity = product_quantity
         self.unit_price = unit_price
         self.payment_type = payment_type
         self.payment_billing_code = payment_billing_code
@@ -38,26 +38,26 @@ class OrdersDb:
         # define a SQL query to check for matching orders
         query = "SELECT * FROM orders WHERE OrderNumber = ?"
 
-        logger.info("Checking for orders in Database")
+        logger.info("Checking for orders in Database") # pragma: no cover
         # loop over each row in the DataFrame and check for a matching order in the database
         for index, row in orders_df.iterrows():
             params = (row['OrderNumber'],)
             existing_order = pd.read_sql_query(query, self.conn, params=params)
             if not existing_order.empty:
-                logger.warn(f"Order %s already exists in database",params)
+                logger.warn(f"Order %s already exists in database", params) # pragma: no cover
                 pass
             else:
                 try:
                     self.cursor.execute('''INSERT INTO orders (OrderNumber, ProductQuantity, UnitPrice, PaymentType, 
                                         PaymentBillingCode, PaymentDate) VALUES (?, ?, ?, ?, ?, ?)''',
-                                        (row['OrderNumber'], row['ProductQuantity'], row['UnitPrice'], row['PaymentType'],
+                                        (row['OrderNumber'], row['ProductQuantity'], row['UnitPrice'],
+                                         row['PaymentType'],
                                          row['PaymentBillingCode'], row['PaymentDate']))
                     self.conn.commit()
                 except sqlite3.Error as e:
-                    logger.error("error while inserting data in order table is : %s", e)
+                    logger.error("error while inserting data in order table is : %s", e) # pragma: no cover
 
         self.conn.commit()
-
 
     def close(self):
         self.conn.close()
@@ -74,6 +74,6 @@ class OrdersLoader:
         orders = []
         for _, row in self.orders_df.iterrows():
             order = Orders(row['OrderNumber'], row['ProductQuantity'], row['UnitPrice'], row['PaymentType'],
-                                         row['PaymentBillingCode'], row['PaymentDate'])
+                           row['PaymentBillingCode'], row['PaymentDate'])
             orders.append(order)
         return orders

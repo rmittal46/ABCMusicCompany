@@ -3,3 +3,4 @@ venv/
 logfile.log
 __pycache__/
 .idea
+.coverage

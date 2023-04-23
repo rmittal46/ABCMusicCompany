@@ -14,13 +14,12 @@ def load_customers(file_data):
 
     unique_customers = loader_df.get_unique_customers()
 
-    split_name = loader_df.split_customer_name(unique_customers)
-
     temp_table = 'temp_customers'
-    split_name.to_sql(temp_table, db.conn, if_exists='replace', index=False)
+    unique_customers.to_sql(temp_table, db.conn, if_exists='replace', index=False)
 
-    db.insert_customer(split_name)
+    db.insert_customer(unique_customers)
     logger.info("customers inserted")
 
     db.conn.commit()
     db.cursor.close()
+    db.close()

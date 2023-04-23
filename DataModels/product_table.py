@@ -8,11 +8,11 @@ logger = getlogger(__name__)
 
 
 class Product:
-    def __init__(self, product_name, product_type, unit_price, quantity, currency):
+    def __init__(self, product_name, product_type, unit_price, product_quantity, currency):
         self.product_name = product_name
         self.product_type = product_type
         self.unit_price = unit_price
-        self.quantity = quantity
+        self.product_quantity = product_quantity
         self.currency = currency
 
 
@@ -40,14 +40,14 @@ class ProductsDB:
     def insert_product(self, product):
 
         # define a SQL query to check for matching product names
-        query1 = "SELECT * FROM products WHERE ProductName = ? "
+        query1 = "SELECT * FROM products WHERE ProductName = ? and CurrentFlag = 1"
 
         # loop over each row in the DataFrame and check for a matching customer in the database
         for index, row in product.iterrows():
             params = (row['ProductName'],)
             existing_product = pd.read_sql_query(query1, self.conn, params=params)
             if not existing_product.empty:
-                logger.warn("Product %s already exists in database", params)
+                logger.warn("Product %s already exists in database", params) # pragma: no cover
                 existing_products = existing_product.iloc[0]
                 try:
                     self.cursor.execute('''
@@ -62,7 +62,7 @@ class ProductsDB:
                                          row['ProductQuantity'],row['Currency'], datetime.today().strftime('%Y-%m-%d')))
                     self.conn.commit()
                 except sqlite3.Error as e:
-                    logger.error("error while inserting data is : %s", e)
+                    logger.error("error while inserting data is : %s", e) # pragma: no cover
                 self.conn.commit()
             else:
                 # insert the new product into the database

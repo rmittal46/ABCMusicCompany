@@ -18,7 +18,7 @@ def load_order_details(file_data):
     order_details.to_sql(temp_table, db.conn, if_exists='replace', index=False)
 
     db.insert_order_details(order_details)
-    logger.info("OrderDetails inserted int the table")
+    logger.info("OrderDetails inserted into the table")
 
     db.conn.commit()
     db.cursor.close()
