@@ -25,4 +25,4 @@ def load_products(file_data):
     logger.info("Products inserted")
 
     db.conn.commit()
-    db.cursor.close()
+    db.close()

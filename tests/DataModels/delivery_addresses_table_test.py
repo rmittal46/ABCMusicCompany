@@ -1,7 +1,4 @@
-import sqlite3, os
-from unittest.mock import MagicMock
 import pandas as pd
-import pytest
 from pandas._testing import assert_frame_equal
 
 from DataModels.customer_table import CustomersDB
@@ -27,10 +24,6 @@ def test_insert_address():
         'DeliveryCountry': ['USA', 'USA', 'Canada'],
         'DeliveryContactNumber': ['555-1234', '555-5678', '555-9012']
     })
-
-    # # insert the test data into the database
-    # db1 = CustomersDB('test.db')
-    # db1.insert_customer(pd.DataFrame({'First_name': ['John', 'Jane'], 'Last_name': ['Doe', 'Smith']}))
 
     db.insert_address(test_df)
 

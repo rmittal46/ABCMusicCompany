@@ -1,88 +1,105 @@
-import sqlite3
-from unittest.mock import MagicMock
 import pandas as pd
 import pytest
 
-from DataModels.customer_table import CustomersDB, CustomerLoader, Customer
+from DataModels.customer_table import CustomerLoader, Customer
+from DataModels.product_table import ProductsDB, ProductLoader, Product
 from Utils.logger import getlogger
 from pandas.testing import assert_frame_equal
 
 logger = getlogger(__name__)
 
 
-def test_insert_customer():
+def test_insert_products():
     # prepare a test database with some initial data
     db_name = ':memory:'
 
-    # create a CustomersDB object and call the insert_customer method with some new customers
-    db = CustomersDB(db_name)
-    db.cursor.execute("INSERT INTO customers (First_name, Last_name, IsActive) VALUES ('Alice', 'Adams', 1)")
+    # create a ProductsDB object and call the insert_product method with some new products
+    db = ProductsDB(db_name)
+    db.cursor.execute('''INSERT INTO products (ProductName, ProductType, UnitPrice, 
+                    ProductQuantity, Currency, CurrentFlag, EffectiveFrom, EffectiveTo) 
+                    VALUES ('Piano','Keyboard',4700,10,'GBP',1,'2023-04-20', '9999-12-31')
+                    ''')
 
-    df = pd.DataFrame({'First_name': ['Bob', 'Charlie'], 'Last_name': ['Brown', 'Chaplin']})
-    db.insert_customer(df)
+    df = pd.DataFrame({
+        'ProductName': ['Harp', 'Zither'],
+        'ProductType': ['String', 'String'],
+        'UnitPrice': ['940', '2400'],
+        'ProductQuantity': ['2', '1'],
+        'Currency': ['GBP', 'GBP']
+    })
+    db.insert_product(df)
 
     # check that the new customers were inserted correctly into the database
-    db.cursor.execute('SELECT * FROM customers')
-    result = db.cursor.fetchall()
-    expected = [(1, 'Alice', 'Adams', None, None, 1), (2, 'Bob', 'Brown', None, None, 1),
-                (3, 'Charlie', 'Chaplin', None, None, 1)]
-    print("result ", result)
-    print("expected ", expected)
+    result = pd.read_sql_query('SELECT * FROM products', db.conn)
+
+    # assert that the data was inserted correctly
+    assert result.shape[0] == 3
+    assert result['ProductName'].values[0] == 'Piano'
+    assert result['ProductType'].values[0] == 'Keyboard'
+    assert result['UnitPrice'].values[0] == 4700.0
+    assert result['ProductQuantity'].values[0] == 10
+    assert result['Currency'].values[0] == 'GBP'
 
     db.close()
 
-    assert result == expected
 
-
-def test_unique_customers():
-    df = pd.DataFrame({'ClientName': ['Bob Brown', 'Bob Brown', 'Bobby Dave'],
-                       'First_name': ['Bob', 'Bob', 'Bobby'],
-                       'Last_name': ['Brown', 'Brown', 'Dave']
+def test_unique_products():
+    df = pd.DataFrame({'ProductName': ['Piano', 'Bamboo Flute', 'Piano'],
+                       'ProductType': ['Keyboard', 'Woodwind', 'Keyboard'],
+                       'UnitPrice': ['4700', '60', '4700'],
+                       'Currency': ['GBP', 'GBP', 'GBP'],
+                       'ClientName': ['Macgyver inc', 'Howell llc', 'Macgyver inc']
                        })
 
-    loader_df = CustomerLoader(df)
+    loader_df = ProductLoader(df)
 
-    actual_unique_customers = loader_df.get_unique_customers()
+    actual_unique_customers = loader_df.get_unique_products()
 
-
-    expected_unique_customers = pd.DataFrame({'First_name': ['Bob', 'Bobby'],
-                                              'Last_name': ['Brown', 'Dave']
+    expected_unique_customers = pd.DataFrame({'ProductName': ['Piano', 'Bamboo Flute'],
+                                              'ProductType': ['Keyboard', 'Woodwind'],
+                                              'UnitPrice': ['4700', '60'],
+                                              'Currency': ['GBP', 'GBP']
                                               })
 
     assert_frame_equal(expected_unique_customers, actual_unique_customers)
 
 
-def test_get_customers():
+def test_get_products():
     # Create a test dataframe with some data
-    test_data = {
-        'First_name': ['John', 'Jane'],
-        'Last_name': ['Doe', 'Smith'],
-        'Email': ['johndoe@example.com', 'janesmith@example.com'],
-        'Phone': ['1234567890', '0987654321'],
-        'IsActive': [True, False]
-    }
-    test_df = pd.DataFrame(test_data)
+    test_df = pd.DataFrame({'ProductName': ['Piano', 'Bamboo Flute'],
+                            'ProductType': ['Keyboard', 'Woodwind'],
+                            'UnitPrice': ['4700', '60'],
+                            'ProductQuantity': [10, 22],
+                            'Currency': ['GBP', 'GBP']
+                            })
 
     # Create an instance of MyClass using the test dataframe
-    loader_df = CustomerLoader(test_df)
+    loader_df = ProductLoader(test_df)
 
     # Call the get_customers method and check the results
-    customers = loader_df.get_customers()
-    assert isinstance(customers, list)
-    assert len(customers) == 2
+    products = loader_df.get_products()
+    assert isinstance(products, list)
+    assert len(products) == 2
+    for i, row in test_df.iterrows():
+        assert products[i].product_name == row['ProductName']
+        assert products[i].product_type == row['ProductType']
+        assert products[i].unit_price == row['UnitPrice']
+        assert products[i].product_quantity == row['ProductQuantity']
+        assert products[i].currency == row['Currency']
 
-    # Check the first customer object
-    assert isinstance(customers[0], Customer)
-    assert customers[0].first_name == 'John'
-    assert customers[0].last_name == 'Doe'
-    assert customers[0].email == 'johndoe@example.com'
-    assert customers[0].phone == '1234567890'
-    assert customers[0].is_active == True
 
-    # Check the second customer object
-    assert isinstance(customers[1], Customer)
-    assert customers[1].first_name == 'Jane'
-    assert customers[1].last_name == 'Smith'
-    assert customers[1].email == 'janesmith@example.com'
-    assert customers[1].phone == '0987654321'
-    assert customers[1].is_active == False
+def test_get_product_quantity_by_product():
+    # Create a test dataframe with some data
+    test_data = pd.DataFrame({'ProductName': ['Piano', 'Bamboo Flute', 'Piano'],
+                              'ProductType': ['Keyboard', 'Woodwind', 'Keyboard'],
+                              'UnitPrice': ['4700', '60', '4700'],
+                              'Currency': ['GBP', 'GBP', 'GBP'],
+                              'ClientName': ['Macgyver inc', 'Howell llc', 'Macgyver inc'],
+                              'ProductQuantity': [2, 4, 5]
+                              })
+
+    loader_df = ProductLoader(test_data)
+
+    Product_quantity = loader_df.get_product_quantity_by_product()
+
+    assert Product_quantity['ProductQuantity'].values[1] == [7]
