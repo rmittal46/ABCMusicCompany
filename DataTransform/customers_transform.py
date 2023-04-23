@@ -20,6 +20,9 @@ def load_customers(file_data):
     db.insert_customer(unique_customers)
     logger.info("customers inserted")
 
+    # Drop temp table
+    db.drop_table(temp_table)
+
     db.conn.commit()
-    db.cursor.close()
+
     db.close()

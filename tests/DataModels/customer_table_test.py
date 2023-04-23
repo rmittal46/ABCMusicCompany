@@ -1,7 +1,4 @@
-import sqlite3
-from unittest.mock import MagicMock
 import pandas as pd
-import pytest
 
 from DataModels.customer_table import CustomersDB, CustomerLoader, Customer
 from Utils.logger import getlogger

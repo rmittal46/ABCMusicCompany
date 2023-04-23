@@ -29,13 +29,7 @@ def getPath():
     return path
 
 
-def dropTable(tablename):
-    drop_table_sql = 'drop table ' + tablename
-    logger.info("%s ", drop_table_sql)
-    return drop_table_sql
-
 def getOrderDetailKeys(db, file_data):
-
     # read the customer table into a pandas dataframe
     customer_df = pd.read_sql_query("SELECT  Distinct Customer_id, First_name, Last_name FROM customers", db.conn)
 
@@ -43,19 +37,23 @@ def getOrderDetailKeys(db, file_data):
     product_df = pd.read_sql_query("SELECT Distinct ProductName, Product_id FROM products", db.conn)
 
     # read the Delivery Address table into a pandas dataframe
-    address_df = pd.read_sql_query("SELECT Distinct Address_id, Address_line, DeliveryPostcode FROM delivery_addresses", db.conn)
+    address_df = pd.read_sql_query("SELECT Distinct Address_id, Address_line, DeliveryPostcode FROM delivery_addresses",
+                                   db.conn)
 
-    file_data = file_data.drop_duplicates(subset=['OrderNumber','ClientName','ProductName','DeliveryAddress', 'DeliveryPostcode']).loc[:,['OrderNumber','First_name','Last_name','ProductName','DeliveryAddress','DeliveryPostcode']]
+    file_data = file_data.drop_duplicates(
+        subset=['OrderNumber', 'ClientName', 'ProductName', 'DeliveryAddress', 'DeliveryPostcode']).loc[:,
+                ['OrderNumber', 'First_name', 'Last_name', 'ProductName', 'DeliveryAddress', 'DeliveryPostcode']]
 
-    merged_df = pd.merge(file_data, customer_df,on=['First_name', 'Last_name']).merge(product_df,on=['ProductName']).merge(address_df,left_on=['DeliveryAddress','DeliveryPostcode'],right_on=['Address_line','DeliveryPostcode'])
+    merged_df = pd.merge(file_data, customer_df, on=['First_name', 'Last_name']).merge(product_df,
+                                                                                       on=['ProductName']).merge(
+        address_df, left_on=['DeliveryAddress', 'DeliveryPostcode'], right_on=['Address_line', 'DeliveryPostcode'])
 
-    merged_df = merged_df[['OrderNumber','Customer_id','Address_id','Product_id']]
+    merged_df = merged_df[['OrderNumber', 'Customer_id', 'Address_id', 'Product_id']]
 
     return merged_df
 
 
 def getCustomerId(db, file_data):
-
     # read the customer table into a pandas dataframe
     customer_df = pd.read_sql_query("SELECT Customer_id, First_name, Last_name FROM customers", db.conn)
 
@@ -74,8 +72,8 @@ def getCustomerId(db, file_data):
 
     return merged_df
 
-def getProductId(db, file_data):
 
+def getProductId(db, file_data):
     # read the product table into a pandas dataframe
     product_df = pd.read_sql_query("SELECT ProductName, Product_id FROM products", db.conn)
 
@@ -91,17 +89,18 @@ def getProductId(db, file_data):
 
     return merged_df
 
-def getAddressId(db, file_data):
 
+def getAddressId(db, file_data):
     # read the Delivery Address table into a pandas dataframe
     address_df = pd.read_sql_query("SELECT Address_id, Address_line, DeliveryPostcode FROM delivery_addresses", db.conn)
 
-    file_data = file_data.drop_duplicates(['DeliveryAddress','DeliveryPostcode'])
+    file_data = file_data.drop_duplicates(['DeliveryAddress', 'DeliveryPostcode'])
 
-    address_line_df = file_data[["DeliveryAddress","DeliveryPostcode"]].drop_duplicates()
+    address_line_df = file_data[["DeliveryAddress", "DeliveryPostcode"]].drop_duplicates()
 
     # join the customer and orders tables on the customer name column
-    merged_df = pd.merge(address_df, address_line_df, left_on=['Address_line','DeliveryPostcode'],right_on=['DeliveryAddress','DeliveryPostcode'])
+    merged_df = pd.merge(address_df, address_line_df, left_on=['Address_line', 'DeliveryPostcode'],
+                         right_on=['DeliveryAddress', 'DeliveryPostcode'])
 
     # drop irrelevant from the dataframe
     merged_df = merged_df[['Address_id']]

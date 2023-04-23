@@ -20,5 +20,8 @@ def load_order_details(file_data):
     db.insert_order_details(order_details)
     logger.info("OrderDetails inserted into the table")
 
+    # Drop temp table
+    db.drop_table(temp_table)
+
     db.conn.commit()
-    db.cursor.close()
+    db.close()

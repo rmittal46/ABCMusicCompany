@@ -19,10 +19,15 @@ def load_products(file_data):
 
     products = pd.merge(unique_products, Product_quantity, on=['ProductName', 'ProductType'])
 
-    products.to_sql('temp_products', db.conn, if_exists='replace', index=False)
+    temp_table = 'temp_products'
+
+    products.to_sql(temp_table, db.conn, if_exists='replace', index=False)
 
     db.insert_product(products)
     logger.info("Products inserted")
+
+    # Drop temp table
+    db.drop_table(temp_table)
 
     db.conn.commit()
     db.close()

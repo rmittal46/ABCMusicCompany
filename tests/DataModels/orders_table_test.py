@@ -43,12 +43,12 @@ def test_insert_orders():
 
 def test_unique_orders():
     df = pd.DataFrame({
-        'OrderNumber': ['Po0024697-1','Po0024697-1'],
-        'ProductQuantity': [2,1],
-        'UnitPrice': [2000.0,3000.0],
-        'PaymentType': ['CREDIT','CREDIT'],
-        'PaymentBillingCode': ['Po0024697-20210127','Po0024697-20210127'],
-        'PaymentDate': ['27/01/2021','27/01/2021']
+        'OrderNumber': ['Po0024697-1', 'Po0024697-1'],
+        'ProductQuantity': [2, 1],
+        'UnitPrice': [2000.0, 3000.0],
+        'PaymentType': ['CREDIT', 'CREDIT'],
+        'PaymentBillingCode': ['Po0024697-20210127', 'Po0024697-20210127'],
+        'PaymentDate': ['27/01/2021', '27/01/2021']
     })
 
     loader_df = OrdersLoader(df)

@@ -85,6 +85,11 @@ class DeliveryAddressDB:
     def close(self):
         self.conn.close()
 
+    def drop_table(self, table_name):
+        query = 'drop table ' + table_name
+        self.cursor.execute(query)
+        self.conn.commit()
+
 
 class AddressLoader:
     def __init__(self, file_data):

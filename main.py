@@ -9,11 +9,10 @@ from Utils.constants import *
 from Utils.helpers import *
 from Utils.logger import getlogger
 
-
 logger = getlogger(__name__)
 
-def run():
 
+def run():
     # feature To provide arguments and run application basis on config files
     args = getparser()
 

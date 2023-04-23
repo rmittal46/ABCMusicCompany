@@ -20,5 +20,9 @@ def load_orders(file_data):
     db.insert_order(unique_orders)
     logger.info("Orders inserted")
 
+    # Drop temp table
+    db.drop_table(temp_table)
+
     db.conn.commit()
+
     db.close()
