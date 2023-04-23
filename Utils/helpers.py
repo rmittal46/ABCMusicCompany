@@ -45,8 +45,6 @@ def getOrderDetailKeys(db, file_data):
     # read the Delivery Address table into a pandas dataframe
     address_df = pd.read_sql_query("SELECT Distinct Address_id, Address_line, DeliveryPostcode FROM delivery_addresses", db.conn)
 
-    file_data[['First_name', 'Last_name']] = file_data['ClientName'].str.split(n=1, expand=True)
-
     file_data = file_data.drop_duplicates(subset=['OrderNumber','ClientName','ProductName','DeliveryAddress', 'DeliveryPostcode']).loc[:,['OrderNumber','First_name','Last_name','ProductName','DeliveryAddress','DeliveryPostcode']]
 
     merged_df = pd.merge(file_data, customer_df,on=['First_name', 'Last_name']).merge(product_df,on=['ProductName']).merge(address_df,left_on=['DeliveryAddress','DeliveryPostcode'],right_on=['Address_line','DeliveryPostcode'])

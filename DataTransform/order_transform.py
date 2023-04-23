@@ -6,6 +6,7 @@ from Utils.logger import getlogger
 
 logger = getlogger(__name__)
 
+
 def load_orders(file_data):
     # Connect to SQLite database
     db = OrdersDb(os.path.join(getPath(), 'resource/music_warehouse.db'))
@@ -20,4 +21,4 @@ def load_orders(file_data):
     logger.info("Orders inserted")
 
     db.conn.commit()
-    db.cursor.close()
+    db.close()

@@ -40,7 +40,7 @@ class ProductsDB:
     def insert_product(self, product):
 
         # define a SQL query to check for matching product names
-        query1 = "SELECT * FROM products WHERE ProductName = ? "
+        query1 = "SELECT * FROM products WHERE ProductName = ? and CurrentFlag = 1"
 
         # loop over each row in the DataFrame and check for a matching customer in the database
         for index, row in product.iterrows():

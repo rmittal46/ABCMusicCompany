@@ -33,6 +33,7 @@ def to_lower_case(dataframe):
     dataframe = dataframe.applymap(lambda x: x.lower().capitalize() if isinstance(x, str) else x)
     return dataframe
 
+
 def replace_country_code(dataframe):
-    dataframe['DeliveryCountry'] = dataframe['DeliveryCountry'].replace(['Uk'],'United kingdom')
+    dataframe['DeliveryCountry'] = dataframe['DeliveryCountry'].replace(['Uk'], 'United kingdom')
     return dataframe
