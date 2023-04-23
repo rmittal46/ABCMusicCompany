@@ -4,3 +4,4 @@ logfile.log
 __pycache__/
 .idea
 .coverage
+coverage.xml

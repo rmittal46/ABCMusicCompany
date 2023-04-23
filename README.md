@@ -47,3 +47,8 @@ Command to run application is :
 ```
 python -m pytest tests/
 ```
+
+# How to check test coverage
+```
+python -m pytest tests/ --cov=DataModels --cov-report html
+```

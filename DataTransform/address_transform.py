@@ -22,5 +22,9 @@ def load_address(file_data):
     db.insert_address(address_df)
     logger.info("Addresses inserted into the table")
 
+    # Drop temp table
+    db.drop_table(temp_table)
+
     db.conn.commit()
+
     db.close()
