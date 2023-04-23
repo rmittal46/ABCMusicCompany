@@ -1,5 +1,4 @@
 # Functions that are going to help ingestion, transformation & cleanup of file
-import sqlite3
 
 import os
 import pandas as pd

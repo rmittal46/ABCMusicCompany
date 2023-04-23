@@ -36,23 +36,23 @@ def run():
 
     # Ingest into customers table
     logger.info("Starting Customer table Loading")
-    load_customers(file_data)
+    load_customers(clean_df)
 
     # ingest into products table
     logger.info("Starting Products table Loading")
-    load_products(file_data)
+    load_products(clean_df)
 
     # ingest into Address Table
     logger.info("Starting Address table Loading")
-    load_address(file_data)
+    load_address(clean_df)
 
     # ingest into Orders Table
     logger.info("Starting Orders table Loading")
-    load_orders(file_data)
+    load_orders(clean_df)
 
     # ingest into Orders Table
     logger.info("Starting Order_details table Loading")
-    load_order_details(file_data)
+    load_order_details(clean_df)
 
 
 # Press the green button in the gutter to run the script.

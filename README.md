@@ -43,5 +43,7 @@ Command to run application is :
 
 **python3 main.py -p properties.yaml**
 
-# Future Scope
-1. Add Unit tests
+# How to run tests
+```
+python -m pytest tests/
+```

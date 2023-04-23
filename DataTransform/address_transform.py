@@ -23,4 +23,4 @@ def load_address(file_data):
     logger.info("Addresses inserted into the table")
 
     db.conn.commit()
-    db.cursor.close()
+    db.close()
